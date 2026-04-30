@@ -5,51 +5,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DigiHC to Timesheet</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 80px auto; padding: 0 20px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
   h1 { font-size: 1.4rem; margin-bottom: 24px; }
   label { display: block; font-weight: 600; margin: 16px 0 6px; font-size: 0.9rem; }
-  input[type="file"] { display: block; margin-bottom: 8px; }
-  button { margin-top: 20px; padding: 10px 28px; font-size: 0.95rem; cursor: pointer; }
-  #status { margin-top: 16px; font-size: 0.9rem; }
+  input[type="file"] { display: block; margin-bottom: 8px; font-size: 0.85rem; }
+  button { padding: 10px 28px; font-size: 0.95rem; cursor: pointer; }
+  #status { margin-top: 16px; font-size: 0.9rem; min-height: 22px; }
   .error { color: #d32f2f; }
   .success { color: #2e7d32; }
+  .info { color: #555; }
+
+  #activitySection { margin-top: 32px; }
+  #activitySection h2 { font-size: 1.1rem; margin-bottom: 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+  th { background: #f5f5f5; font-weight: 600; white-space: nowrap; }
+  td { vertical-align: middle; }
+
+  .activity-input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box; }
+  .activity-input:focus { border-color: #1976d2; outline: none; }
+
+  .status-H { color: #2e7d32; font-weight: 600; }
+  .status-LIB { color: #888; }
+  .status-TK { color: #d32f2f; }
+  .status-none { color: #aaa; }
+
+  #downloadBtn { margin-top: 20px; }
+
+  @media (max-width: 600px) {
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) { display: none; }
+  }
 </style>
 </head>
 <body>
 <h1>DigiHC Attendance → Timesheet</h1>
 
-<form id="uploadForm">
+<div id="uploadSection">
   <label for="pdf">DigiHC Attendance PDF</label>
   <input type="file" id="pdf" name="pdf" accept=".pdf" required>
 
   <label for="template">Timesheet Template (XLSX)</label>
   <input type="file" id="template" name="template" accept=".xlsx" required>
 
-  <button type="submit">Convert & Download</button>
-</form>
+  <button id="previewBtn">Preview Data</button>
+  <div id="status"></div>
+</div>
 
-<div id="status"></div>
+<div id="activitySection" style="display:none">
+  <h2>Aktivitas Harian</h2>
+  <table id="activityTable">
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Status</th>
+        <th>Aktivitas (Kolom K)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button id="downloadBtn">Download Timesheet</button>
+</div>
 
 <script>
-const form = document.getElementById('uploadForm');
-const status = document.getElementById('status');
+const statusEl = document.getElementById('status');
+const previewBtn = document.getElementById('previewBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const activitySection = document.getElementById('activitySection');
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  status.textContent = 'Processing...';
-  status.className = '';
+let previewData = null;
 
-  const data = new FormData();
-  data.append('pdf', document.getElementById('pdf').files[0]);
-  data.append('template', document.getElementById('template').files[0]);
+function setStatus(msg, cls) {
+  statusEl.textContent = msg;
+  statusEl.className = cls || '';
+}
+
+previewBtn.addEventListener('click', async () => {
+  const pdfFile = document.getElementById('pdf').files[0];
+  const templateFile = document.getElementById('template').files[0];
+
+  if (!pdfFile || !templateFile) {
+    setStatus('Pilih file PDF dan template terlebih dahulu.', 'error');
+    return;
+  }
+
+  setStatus('Memproses...', 'info');
+  previewBtn.disabled = true;
 
   try {
+    const data = new FormData();
+    data.append('pdf', pdfFile);
+    data.append('template', templateFile);
+
+    const res = await fetch('/preview', { method: 'POST', body: data });
+
+    if (!res.ok) {
+      const err = await res.json();
+      setStatus('Error: ' + (err.error || 'Unknown error'), 'error');
+      return;
+    }
+
+    previewData = await res.json();
+    renderTable(previewData);
+    activitySection.style.display = 'block';
+    setStatus(previewData.rows.length + ' hari ditemukan. Isi aktivitas lalu klik Download.', 'success');
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'error');
+  } finally {
+    previewBtn.disabled = false;
+  }
+});
+
+function renderTable(data) {
+  const tbody = document.querySelector('#activityTable tbody');
+  tbody.innerHTML = '';
+
+  const statusLabels = { H: 'Hadir', LIB: 'Libur', TK: 'Tanpa Keterangan' };
+
+  for (const row of data.rows) {
+    const tr = document.createElement('tr');
+
+    const tdDate = document.createElement('td');
+    tdDate.textContent = row.date;
+
+    const tdIn = document.createElement('td');
+    tdIn.textContent = row.checkIn ? row.checkIn.substring(0, 5) : '\u2014';
+
+    const tdOut = document.createElement('td');
+    tdOut.textContent = row.checkOut ? row.checkOut.substring(0, 5) : '\u2014';
+
+    const tdStatus = document.createElement('td');
+    tdStatus.textContent = statusLabels[row.status] || '\u2014';
+    tdStatus.className = 'status-' + (row.status || 'none');
+
+    const tdAct = document.createElement('td');
+    if (row.status === 'H') {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'activity-input';
+      input.value = row.activity || '';
+      input.dataset.serial = row.serial;
+      input.placeholder = 'Masukkan aktivitas...';
+      tdAct.appendChild(input);
+    } else {
+      if (row.status === 'LIB' && row.activity) {
+        tdAct.textContent = row.activity;
+      } else if (row.status === 'TK') {
+        tdAct.textContent = 'Tanpa Keterangan';
+      } else {
+        tdAct.textContent = '\u2014';
+      }
+    }
+
+    tr.appendChild(tdDate);
+    tr.appendChild(tdIn);
+    tr.appendChild(tdOut);
+    tr.appendChild(tdStatus);
+    tr.appendChild(tdAct);
+    tbody.appendChild(tr);
+  }
+}
+
+downloadBtn.addEventListener('click', async () => {
+  const pdfFile = document.getElementById('pdf').files[0];
+  const templateFile = document.getElementById('template').files[0];
+
+  if (!pdfFile || !templateFile) {
+    setStatus('File PDF dan template harus dipilih.', 'error');
+    return;
+  }
+
+  const activities = [];
+  document.querySelectorAll('.activity-input').forEach(input => {
+    if (input.value.trim()) {
+      activities.push({
+        serial: parseInt(input.dataset.serial),
+        activity: input.value.trim()
+      });
+    }
+  });
+
+  setStatus('Mengunduh...', 'info');
+  downloadBtn.disabled = true;
+
+  try {
+    const data = new FormData();
+    data.append('pdf', pdfFile);
+    data.append('template', templateFile);
+    data.append('activities', JSON.stringify(activities));
+
     const res = await fetch('/convert', { method: 'POST', body: data });
 
     if (!res.ok) {
       const err = await res.json();
-      status.textContent = 'Error: ' + (err.error || 'Unknown error');
-      status.className = 'error';
+      setStatus('Error: ' + (err.error || 'Unknown error'), 'error');
       return;
     }
 
@@ -61,11 +213,11 @@ form.addEventListener('submit', async (e) => {
     a.click();
     URL.revokeObjectURL(url);
 
-    status.textContent = 'Download started!';
-    status.className = 'success';
+    setStatus('Download dimulai!', 'success');
   } catch (err) {
-    status.textContent = 'Error: ' + err.message;
-    status.className = 'error';
+    setStatus('Error: ' + err.message, 'error');
+  } finally {
+    downloadBtn.disabled = false;
   }
 });
 </script>
