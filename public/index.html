@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DigiHC to Timesheet</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 80px auto; padding: 0 20px; }
+  h1 { font-size: 1.4rem; margin-bottom: 24px; }
+  label { display: block; font-weight: 600; margin: 16px 0 6px; font-size: 0.9rem; }
+  input[type="file"] { display: block; margin-bottom: 8px; }
+  button { margin-top: 20px; padding: 10px 28px; font-size: 0.95rem; cursor: pointer; }
+  #status { margin-top: 16px; font-size: 0.9rem; }
+  .error { color: #d32f2f; }
+  .success { color: #2e7d32; }
+</style>
+</head>
+<body>
+<h1>DigiHC Attendance → Timesheet</h1>
+
+<form id="uploadForm">
+  <label for="pdf">DigiHC Attendance PDF</label>
+  <input type="file" id="pdf" name="pdf" accept=".pdf" required>
+
+  <label for="template">Timesheet Template (XLSX)</label>
+  <input type="file" id="template" name="template" accept=".xlsx" required>
+
+  <button type="submit">Convert & Download</button>
+</form>
+
+<div id="status"></div>
+
+<script>
+const form = document.getElementById('uploadForm');
+const status = document.getElementById('status');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  status.textContent = 'Processing...';
+  status.className = '';
+
+  const data = new FormData();
+  data.append('pdf', document.getElementById('pdf').files[0]);
+  data.append('template', document.getElementById('template').files[0]);
+
+  try {
+    const res = await fetch('/convert', { method: 'POST', body: data });
+
+    if (!res.ok) {
+      const err = await res.json();
+      status.textContent = 'Error: ' + (err.error || 'Unknown error');
+      status.className = 'error';
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timesheet-filled.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    status.textContent = 'Download started!';
+    status.className = 'success';
+  } catch (err) {
+    status.textContent = 'Error: ' + err.message;
+    status.className = 'error';
+  }
+});
+</script>
+</body>
+</html>

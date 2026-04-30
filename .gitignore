@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.xlsx
+*.pdf
+!sample-timesheet.xlsx
+!sample-timesheet-final.xlsx
+!sample-digihc.pdf
