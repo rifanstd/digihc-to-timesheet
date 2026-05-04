@@ -146,6 +146,29 @@
     box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
   }
 
+  #inputFilename {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    height: 40px;
+    color: var(--text);
+    font-size: 0.85rem;
+    width: 100%;
+    margin-bottom: 16px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  #inputFilename:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+  }
+
+  #inputFilename::placeholder {
+    color: var(--text-hint);
+  }
+
   /* Activity table */
   #activityTable {
     width: 100%;
@@ -367,6 +390,8 @@
       </thead>
       <tbody></tbody>
     </table>
+    <label for="inputFilename">Nama File</label>
+    <input type="text" id="inputFilename" />
     <button id="downloadBtn">Download Timesheet</button>
     <div id="status"></div>
 
@@ -390,6 +415,16 @@
         document.getElementById('inputSite').value = data.defaults?.site || '';
         document.getElementById('inputName').value = data.metadata?.name || '';
         document.getElementById('inputUnit').value = data.metadata?.unit || '';
+        const nameVal = document.getElementById('inputName').value.trim();
+        const mo = data.month.month;
+        const year = data.month.year;
+        const indoMonths = ['Januari','Februari','Maret','April','Mei','Juni',
+                            'Juli','Agustus','September','Oktober','November','Desember'];
+        if (nameVal) {
+          document.getElementById('inputFilename').value = nameVal + '-' + indoMonths[mo] + '-' + year + '-Timesheet.xlsx';
+        } else {
+          document.getElementById('inputFilename').value = 'timesheet-filled.xlsx';
+        }
         const statusLabels = {
           H: "Hadir",
           LIB: "Libur",
@@ -557,7 +592,8 @@
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = "timesheet-filled.xlsx";
+          const filename = document.getElementById('inputFilename').value.trim() || 'timesheet-filled.xlsx';
+          a.download = filename;
           a.click();
           URL.revokeObjectURL(url);
 
