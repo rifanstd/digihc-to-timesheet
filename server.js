@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 const { parsePdf, getRecordMonth, serialToIndonesianDate } = require('./lib/parser');
 const { fillTimesheet, previewTemplate } = require('./lib/filler');
 
@@ -103,7 +104,12 @@ app.get('/preview/:id', (req, res) => {
     return res.status(410).send('<html><body style="font-family:sans-serif;padding:40px;text-align:center;background:#0d1117;color:#e6edf3"><h2>Sesi telah berakhir</h2><p>Silakan <a href="/" style="color:#58a6ff">unggah ulang</a> file PDF dan template.</p></body></html>');
   }
   setTimer(req.params.id);
-  res.sendFile(path.join(__dirname, 'public', 'preview.html'));
+  let html = fs.readFileSync(path.join(__dirname, 'public', 'preview.html'), 'utf8');
+  const injected = html.replace('</head>',
+    '<script>window.__PREVIEW_DATA__ = ' +
+    JSON.stringify(session.previewData) +
+    ';</script></head>');
+  res.send(injected);
 });
 
 app.post('/convert/:id', upload.none(), async (req, res) => {
