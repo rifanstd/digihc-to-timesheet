@@ -1,225 +1,490 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DigiHC to Timesheet</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
-  h1 { font-size: 1.4rem; margin-bottom: 24px; }
-  label { display: block; font-weight: 600; margin: 16px 0 6px; font-size: 0.9rem; }
-  input[type="file"] { display: block; margin-bottom: 8px; font-size: 0.85rem; }
-  button { padding: 10px 28px; font-size: 0.95rem; cursor: pointer; }
-  #status { margin-top: 16px; font-size: 0.9rem; min-height: 22px; }
-  .error { color: #d32f2f; }
-  .success { color: #2e7d32; }
-  .info { color: #555; }
-
-  #activitySection { margin-top: 32px; }
-  #activitySection h2 { font-size: 1.1rem; margin-bottom: 12px; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-  th { background: #f5f5f5; font-weight: 600; white-space: nowrap; }
-  td { vertical-align: middle; }
-
-  .activity-input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box; }
-  .activity-input:focus { border-color: #1976d2; outline: none; }
-
-  .status-H { color: #2e7d32; font-weight: 600; }
-  .status-LIB { color: #888; }
-  .status-TK { color: #d32f2f; }
-  .status-none { color: #aaa; }
-
-  #downloadBtn { margin-top: 20px; }
-
-  @media (max-width: 600px) {
-    th:nth-child(2), td:nth-child(2),
-    th:nth-child(3), td:nth-child(3) { display: none; }
-  }
-</style>
-</head>
-<body>
-<h1>DigiHC Attendance → Timesheet</h1>
-
-<div id="uploadSection">
-  <label for="pdf">DigiHC Attendance PDF</label>
-  <input type="file" id="pdf" name="pdf" accept=".pdf" required>
-
-  <label for="template">Timesheet Template (XLSX)</label>
-  <input type="file" id="template" name="template" accept=".xlsx" required>
-
-  <button id="previewBtn">Preview Data</button>
-  <div id="status"></div>
-</div>
-
-<div id="activitySection" style="display:none">
-  <h2>Aktivitas Harian</h2>
-  <table id="activityTable">
-    <thead>
-      <tr>
-        <th>Tanggal</th>
-        <th>Check-in</th>
-        <th>Check-out</th>
-        <th>Status</th>
-        <th>Aktivitas (Kolom K)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <button id="downloadBtn">Download Timesheet</button>
-</div>
-
-<script>
-const statusEl = document.getElementById('status');
-const previewBtn = document.getElementById('previewBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const activitySection = document.getElementById('activitySection');
-
-let previewData = null;
-
-function setStatus(msg, cls) {
-  statusEl.textContent = msg;
-  statusEl.className = cls || '';
-}
-
-previewBtn.addEventListener('click', async () => {
-  const pdfFile = document.getElementById('pdf').files[0];
-  const templateFile = document.getElementById('template').files[0];
-
-  if (!pdfFile || !templateFile) {
-    setStatus('Pilih file PDF dan template terlebih dahulu.', 'error');
-    return;
-  }
-
-  setStatus('Memproses...', 'info');
-  previewBtn.disabled = true;
-
-  try {
-    const data = new FormData();
-    data.append('pdf', pdfFile);
-    data.append('template', templateFile);
-
-    const res = await fetch('/preview', { method: 'POST', body: data });
-
-    if (!res.ok) {
-      const err = await res.json();
-      setStatus('Error: ' + (err.error || 'Unknown error'), 'error');
-      return;
-    }
-
-    previewData = await res.json();
-    renderTable(previewData);
-    activitySection.style.display = 'block';
-    setStatus(previewData.rows.length + ' hari ditemukan. Isi aktivitas lalu klik Download.', 'success');
-  } catch (err) {
-    setStatus('Error: ' + err.message, 'error');
-  } finally {
-    previewBtn.disabled = false;
-  }
-});
-
-function renderTable(data) {
-  const tbody = document.querySelector('#activityTable tbody');
-  tbody.innerHTML = '';
-
-  const statusLabels = { H: 'Hadir', LIB: 'Libur', TK: 'Tanpa Keterangan' };
-
-  for (const row of data.rows) {
-    const tr = document.createElement('tr');
-
-    const tdDate = document.createElement('td');
-    tdDate.textContent = row.date;
-
-    const tdIn = document.createElement('td');
-    tdIn.textContent = row.checkIn ? row.checkIn.substring(0, 5) : '\u2014';
-
-    const tdOut = document.createElement('td');
-    tdOut.textContent = row.checkOut ? row.checkOut.substring(0, 5) : '\u2014';
-
-    const tdStatus = document.createElement('td');
-    tdStatus.textContent = statusLabels[row.status] || '\u2014';
-    tdStatus.className = 'status-' + (row.status || 'none');
-
-    const tdAct = document.createElement('td');
-    if (row.status === 'H') {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'activity-input';
-      input.value = row.activity || '';
-      input.dataset.serial = row.serial;
-      input.placeholder = 'Masukkan aktivitas...';
-      tdAct.appendChild(input);
-    } else {
-      if (row.status === 'LIB' && row.activity) {
-        tdAct.textContent = row.activity;
-      } else if (row.status === 'TK') {
-        tdAct.textContent = 'Tanpa Keterangan';
-      } else {
-        tdAct.textContent = '\u2014';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DigiHC to Timesheet</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
       }
-    }
+      h1 {
+        font-size: 1.4rem;
+        margin-bottom: 24px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin: 16px 0 6px;
+        font-size: 0.9rem;
+      }
+      input[type="file"] {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+      }
+      button {
+        padding: 10px 28px;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+      #status {
+        margin-top: 16px;
+        font-size: 0.9rem;
+        min-height: 22px;
+      }
+      .error {
+        color: #d32f2f;
+      }
+      .success {
+        color: #2e7d32;
+      }
+      .info {
+        color: #555;
+      }
 
-    tr.appendChild(tdDate);
-    tr.appendChild(tdIn);
-    tr.appendChild(tdOut);
-    tr.appendChild(tdStatus);
-    tr.appendChild(tdAct);
-    tbody.appendChild(tr);
-  }
-}
+      #activitySection {
+        margin-top: 32px;
+      }
+      #activitySection h2 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+      }
 
-downloadBtn.addEventListener('click', async () => {
-  const pdfFile = document.getElementById('pdf').files[0];
-  const templateFile = document.getElementById('template').files[0];
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      th {
+        background: #f5f5f5;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      td {
+        vertical-align: middle;
+      }
 
-  if (!pdfFile || !templateFile) {
-    setStatus('File PDF dan template harus dipilih.', 'error');
-    return;
-  }
+      .activity-input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 0.85rem;
+        box-sizing: border-box;
+      }
+      .activity-input:focus {
+        border-color: #1976d2;
+        outline: none;
+      }
 
-  const activities = [];
-  document.querySelectorAll('.activity-input').forEach(input => {
-    if (input.value.trim()) {
-      activities.push({
-        serial: parseInt(input.dataset.serial),
-        activity: input.value.trim()
+      .status-H {
+        color: #2e7d32;
+        font-weight: 600;
+      }
+      .status-LIB {
+        color: #888;
+      }
+      .status-TK {
+        color: #d32f2f;
+      }
+      .status-S {
+        color: #d32f2f;
+        font-weight: 600;
+      }
+      .status-none {
+        color: #aaa;
+      }
+
+      #downloadBtn {
+        margin-top: 20px;
+      }
+
+      #metadataForm {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 8px 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+      }
+      #metadataForm label {
+        margin: 0;
+        align-self: center;
+        font-size: 0.85rem;
+      }
+      #metadataForm input {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 0.85rem;
+        box-sizing: border-box;
+      }
+      #metadataForm input:focus {
+        border-color: #1976d2;
+        outline: none;
+      }
+
+      @media (max-width: 600px) {
+        th:nth-child(2), td:nth-child(2),
+        th:nth-child(3), td:nth-child(3),
+        th:nth-child(6), td:nth-child(6),
+        th:nth-child(7), td:nth-child(7),
+        th:nth-child(8), td:nth-child(8),
+        th:nth-child(9), td:nth-child(9) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DigiHC Attendance → Timesheet</h1>
+
+    <div id="uploadSection">
+      <label for="pdf">DigiHC Attendance PDF</label>
+      <input type="file" id="pdf" name="pdf" accept=".pdf" required />
+
+      <label for="template">Timesheet Template (XLSX)</label>
+      <input
+        type="file"
+        id="template"
+        name="template"
+        accept=".xlsx"
+        required
+      />
+
+      <button id="previewBtn">Preview Data</button>
+      <div id="status"></div>
+    </div>
+
+    <div id="activitySection" style="display: none">
+      <div id="metadataForm">
+        <label for="inputProjectName">Project Name</label>
+        <input type="text" id="inputProjectName" />
+
+        <label for="inputSite">SITE</label>
+        <input type="text" id="inputSite" />
+
+        <label for="inputUnit">Unit / Divisi</label>
+        <input type="text" id="inputUnit" />
+
+        <label for="inputName">Nama</label>
+        <input type="text" id="inputName" />
+
+        <label for="inputMiiId">MII ID</label>
+        <input type="text" id="inputMiiId" />
+
+        <label for="inputManagerName">Nama Manager (Diperiksa Oleh)</label>
+        <input type="text" id="inputManagerName" />
+
+        <label for="inputDeptHeadName">Nama Kepala Departemen (Disetujui Oleh)</label>
+        <input type="text" id="inputDeptHeadName" />
+      </div>
+
+      <p style="margin: 16px 0 4px; font-size: 0.85rem; color: #555;">Isi Divisi dan Departement untuk mengisi kolom terkait di setiap baris timesheet.</p>
+      <div style="display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; margin-bottom: 16px;">
+        <label for="inputDivisi" style="margin: 0; align-self: center; font-size: 0.85rem;">Divisi</label>
+        <input type="text" id="inputDivisi" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box;" />
+
+        <label for="inputDepartement" style="margin: 0; align-self: center; font-size: 0.85rem;">Departement</label>
+        <input type="text" id="inputDepartement" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box;" />
+      </div>
+
+      <h2>Aktivitas Harian</h2>
+      <table id="activityTable">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Status</th>
+            <th>Aktivitas</th>
+            <th>Project Name</th>
+            <th>Project ID</th>
+            <th>Aplikasi Terdampak</th>
+            <th>AIP Fitur</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="downloadBtn">Download Timesheet</button>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const previewBtn = document.getElementById("previewBtn");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const activitySection = document.getElementById("activitySection");
+
+      let previewData = null;
+
+      function setStatus(msg, cls) {
+        statusEl.textContent = msg;
+        statusEl.className = cls || "";
+      }
+
+      previewBtn.addEventListener("click", async () => {
+        const pdfFile = document.getElementById("pdf").files[0];
+        const templateFile = document.getElementById("template").files[0];
+
+        if (!pdfFile || !templateFile) {
+          setStatus("Pilih file PDF dan template terlebih dahulu.", "error");
+          return;
+        }
+
+        setStatus("Memproses...", "info");
+        previewBtn.disabled = true;
+
+        try {
+          const data = new FormData();
+          data.append("pdf", pdfFile);
+          data.append("template", templateFile);
+
+          const res = await fetch("/preview", { method: "POST", body: data });
+
+          if (!res.ok) {
+            const err = await res.json();
+            setStatus("Error: " + (err.error || "Unknown error"), "error");
+            return;
+          }
+
+          previewData = await res.json();
+          renderTable(previewData);
+          activitySection.style.display = "block";
+          setStatus(
+            previewData.rows.length +
+              " hari ditemukan. Isi aktivitas lalu klik Download.",
+            "success",
+          );
+        } catch (err) {
+          setStatus("Error: " + err.message, "error");
+        } finally {
+          previewBtn.disabled = false;
+        }
       });
-    }
-  });
 
-  setStatus('Mengunduh...', 'info');
-  downloadBtn.disabled = true;
+      function renderTable(data) {
+        const tbody = document.querySelector("#activityTable tbody");
+        tbody.innerHTML = "";
 
-  try {
-    const data = new FormData();
-    data.append('pdf', pdfFile);
-    data.append('template', templateFile);
-    data.append('activities', JSON.stringify(activities));
+        // Populate metadata form
+        document.getElementById('inputProjectName').value = data.defaults?.projectName || '';
+        document.getElementById('inputSite').value = data.defaults?.site || '';
+        document.getElementById('inputName').value = data.metadata?.name || '';
 
-    const res = await fetch('/convert', { method: 'POST', body: data });
+        const statusLabels = {
+          H: "Hadir",
+          LIB: "Libur",
+          TK: "Tanpa Keterangan",
+          S: "Sakit",
+        };
 
-    if (!res.ok) {
-      const err = await res.json();
-      setStatus('Error: ' + (err.error || 'Unknown error'), 'error');
-      return;
-    }
+        for (const row of data.rows) {
+          const tr = document.createElement("tr");
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'timesheet-filled.xlsx';
-    a.click();
-    URL.revokeObjectURL(url);
+          const tdDate = document.createElement("td");
+          tdDate.textContent = row.date;
 
-    setStatus('Download dimulai!', 'success');
-  } catch (err) {
-    setStatus('Error: ' + err.message, 'error');
-  } finally {
-    downloadBtn.disabled = false;
-  }
-});
-</script>
-</body>
+          const tdIn = document.createElement("td");
+          tdIn.textContent = row.checkIn
+            ? row.checkIn.substring(0, 5)
+            : "\u2014";
+
+          const tdOut = document.createElement("td");
+          tdOut.textContent = row.checkOut
+            ? row.checkOut.substring(0, 5)
+            : "\u2014";
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = statusLabels[row.status] || "\u2014";
+          tdStatus.className = "status-" + (row.status || "none");
+
+          const tdAct = document.createElement("td");
+          if (row.status === "H") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "activity-input";
+            input.value = row.activity || "";
+            input.dataset.serial = row.serial;
+            input.placeholder = "Masukkan aktivitas...";
+            tdAct.appendChild(input);
+          } else {
+            if (row.status === "S") {
+              tdAct.textContent = "Sakit";
+            } else if (row.status === "LIB" && row.activity) {
+              tdAct.textContent = row.activity;
+            } else if (row.status === "TK") {
+              tdAct.textContent = "Tanpa Keterangan";
+            } else {
+              tdAct.textContent = "\u2014";
+            }
+          }
+
+          // Project Name
+          const tdProjName = document.createElement("td");
+          if (row.status === "H") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "activity-input";
+            input.dataset.serial = row.serial;
+            input.dataset.field = "projectName";
+            input.placeholder = "Project Name...";
+            tdProjName.appendChild(input);
+          } else {
+            tdProjName.textContent = "\u2014";
+          }
+
+          // Project ID
+          const tdProjId = document.createElement("td");
+          if (row.status === "H") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "activity-input";
+            input.dataset.serial = row.serial;
+            input.dataset.field = "projectId";
+            input.placeholder = "Project ID...";
+            tdProjId.appendChild(input);
+          } else {
+            tdProjId.textContent = "\u2014";
+          }
+
+          // Aplikasi Terdampak
+          const tdAffected = document.createElement("td");
+          if (row.status === "H") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "activity-input";
+            input.dataset.serial = row.serial;
+            input.dataset.field = "affectedApp";
+            input.placeholder = "Aplikasi Terdampak...";
+            tdAffected.appendChild(input);
+          } else {
+            tdAffected.textContent = "\u2014";
+          }
+
+          // AIP Fitur
+          const tdAip = document.createElement("td");
+          if (row.status === "H") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "activity-input";
+            input.dataset.serial = row.serial;
+            input.dataset.field = "aipFeature";
+            input.placeholder = "AIP Fitur...";
+            tdAip.appendChild(input);
+          } else {
+            tdAip.textContent = "\u2014";
+          }
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdIn);
+          tr.appendChild(tdOut);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdAct);
+          tr.appendChild(tdProjName);
+          tr.appendChild(tdProjId);
+          tr.appendChild(tdAffected);
+          tr.appendChild(tdAip);
+          tbody.appendChild(tr);
+        }
+      }
+
+      downloadBtn.addEventListener("click", async () => {
+        const pdfFile = document.getElementById("pdf").files[0];
+        const templateFile = document.getElementById("template").files[0];
+
+        if (!pdfFile || !templateFile) {
+          setStatus("File PDF dan template harus dipilih.", "error");
+          return;
+        }
+
+        const activitiesMap = new Map();
+        document.querySelectorAll(".activity-input").forEach((input) => {
+          const serial = parseInt(input.dataset.serial);
+          if (!activitiesMap.has(serial)) {
+            activitiesMap.set(serial, { serial });
+          }
+          const entry = activitiesMap.get(serial);
+          const field = input.dataset.field || "activity";
+          if (input.value.trim()) {
+            entry[field] = input.value.trim();
+          }
+        });
+
+        // Auto-append 'Sakit' for every S-status row
+        previewData.rows.forEach((row) => {
+          if (row.status === "S") {
+            if (!activitiesMap.has(row.serial)) {
+              activitiesMap.set(row.serial, { serial: row.serial });
+            }
+            activitiesMap.get(row.serial).activity = "Sakit";
+          }
+        });
+
+        const activities = Array.from(activitiesMap.values()).filter(
+          (a) => a.activity || a.projectName || a.projectId || a.affectedApp || a.aipFeature
+        );
+
+        const headerFields = {
+          projectName: document.getElementById('inputProjectName').value.trim(),
+          site: document.getElementById('inputSite').value.trim(),
+          unit: document.getElementById('inputUnit').value.trim(),
+          name: document.getElementById('inputName').value.trim(),
+          miiId: document.getElementById('inputMiiId').value.trim(),
+          managerName: document.getElementById('inputManagerName').value.trim(),
+          deptHeadName: document.getElementById('inputDeptHeadName').value.trim()
+        };
+
+        const rowFields = {
+          divisi: document.getElementById('inputDivisi').value.trim(),
+          departement: document.getElementById('inputDepartement').value.trim()
+        };
+
+        setStatus("Mengunduh...", "info");
+        downloadBtn.disabled = true;
+
+        try {
+          const data = new FormData();
+          data.append("pdf", pdfFile);
+          data.append("template", templateFile);
+          data.append("activities", JSON.stringify(activities));
+          data.append('headerFields', JSON.stringify(headerFields));
+          data.append('rowFields', JSON.stringify(rowFields));
+
+          const res = await fetch("/convert", { method: "POST", body: data });
+
+          if (!res.ok) {
+            const err = await res.json();
+            setStatus("Error: " + (err.error || "Unknown error"), "error");
+            return;
+          }
+
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "timesheet-filled.xlsx";
+          a.click();
+          URL.revokeObjectURL(url);
+
+          setStatus("Download dimulai!", "success");
+        } catch (err) {
+          setStatus("Error: " + err.message, "error");
+        } finally {
+          downloadBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
 </html>

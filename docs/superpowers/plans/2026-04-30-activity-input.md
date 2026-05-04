@@ -340,7 +340,7 @@ Write the complete `public/index.html`:
         <th>Check-in</th>
         <th>Check-out</th>
         <th>Status</th>
-        <th>Aktivitas (Kolom K)</th>
+        <th>Aktivitas</th>
       </tr>
     </thead>
     <tbody></tbody>
