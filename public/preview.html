@@ -592,6 +592,35 @@
       }
 
       downloadBtn.addEventListener("click", async () => {
+        const requiredFields = [
+          { id: 'inputProjectName' },
+          { id: 'inputUnit' },
+          { id: 'inputSite' },
+          { id: 'inputName' },
+          { id: 'inputMiiId' },
+          { id: 'inputManagerName' },
+          { id: 'inputDeptHeadName' },
+          { id: 'inputDivisi' },
+          { id: 'inputDepartement' },
+          { id: 'inputSignDate' }
+        ];
+
+        let hasEmpty = false;
+        for (const field of requiredFields) {
+          const el = document.getElementById(field.id);
+          if (el && !el.value.trim()) {
+            el.classList.add('invalid');
+            hasEmpty = true;
+          } else if (el) {
+            el.classList.remove('invalid');
+          }
+        }
+
+        if (hasEmpty) {
+          setStatus("Harap isi semua field yang wajib.", "error");
+          return;
+        }
+
         const activitiesMap = new Map();
         document.querySelectorAll(".activity-input").forEach((input) => {
           const serial = parseInt(input.dataset.serial);
