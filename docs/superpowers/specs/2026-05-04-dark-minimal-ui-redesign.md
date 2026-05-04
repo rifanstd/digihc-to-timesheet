@@ -118,3 +118,126 @@ Redesign `public/index.html` with a dark, minimal, compact aesthetic — no HTML
 ## Scope boundary
 
 This spec covers **only `public/index.html` inline CSS replacement**. No new files, no new dependencies, no server changes.
+
+---
+
+# Redesain UI Minimal Gelap (Versi Bahasa Indonesia)
+
+## Tujuan
+
+Mendesain ulang `public/index.html` dengan estetika gelap, minimal, ringkas — tanpa perubahan struktur HTML, tanpa dependensi baru. Murni perombakan CSS.
+
+## Keputusan desain
+
+- **Gaya:** Mode gelap, elemen interaktif bulat lembut, tata letak dua langkah dengan pengungkapan
+- **Pendekatan:** Ganti seluruh CSS blok `<style>`; HTML dan JS tetap tidak tersentuh
+- **Target kontras:** WCAG AA (≥4.5:1 untuk teks normal)
+
+---
+
+## Palet warna
+
+| Peran               | Hex       | Penggunaan                                  |
+|---------------------|-----------|----------------------------------------------|
+| Latar halaman       | `#0d1117` | `<body>`                                     |
+| Kartu/permukaan     | `#161b22` | Kartu unggah, kartu metadata, latar input    |
+| Batas               | `#30363d` | Batas input, tepi kartu                      |
+| Teks utama          | `#e6edf3` | Judul, teks isi, pesan status                |
+| Teks sekunder       | `#c9d1d9` | Label                                        |
+| Teks petunjuk       | `#8b949e` | Placeholder, petunjuk non-kritis             |
+| Aksen               | `#58a6ff` | Cincin fokus, tautan                         |
+| Tombol utama        | `#1f6feb` | Tombol aksi/pratinjau (teks `#ffffff`)       |
+| Hover utama         | `#388bfd` | Status hover tombol                          |
+| Aktif utama         | `#1158c7` | Status tekan tombol                          |
+| Tombol sukses       | `#238636` | Tombol unduh (teks `#ffffff`)                |
+| Hover sukses        | `#2ea043` | Hover unduh                                  |
+| Aktif sukses        | `#196c2e` | Tekan unduh                                  |
+| Tombol nonaktif     | `#21262d` | Latar nonaktif (teks `#666e79`)              |
+| Error               | `#f85149` | Pesan error, status TK/S                     |
+| Info                | `#d29922` | Pesan status info                            |
+
+## Tipografi
+
+- Font: `-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` (tidak berubah)
+- Ukuran dasar: 15px
+- Tinggi baris: 1.4
+- Judul: ringkas, putih redup (`#e6edf3`)
+
+---
+
+## Tata letak — alur dua langkah
+
+### Langkah 1: Kartu unggah
+
+- Kartu tunggal terpusat (`max-width: 420px`), terpusat vertikal dengan flexbox pada body
+- Judul: "DigiHC Attendance → Timesheet"
+- Dua input file bergaya kustom (PDF + template) — wadah bulat lebar penuh
+- Tombol pratinjau: pil lebar (`border-radius: 24px`), tinggi 48px
+- Baris status: tersembunyi secara default, muncul di bawah tombol saat ada pesan
+- Semua bagian lain tersembunyi
+
+### Langkah 2: Tampilan editor (terungkap setelah pratinjau)
+
+- Kartu unggah menyusut menjadi bilah tipis (hanya nama file) di atas
+- Kartu metadata: grid 2 kolom (label + input), setiap input bulat dengan latar `#0d1117`
+- Tabel aktivitas: baris gelap bergantian `#161b22` / `#0d1117`, header lengket, padding ringkas
+- Tabel menampilkan: Tanggal, Check-in, Check-out, Status, Aktivitas (menyembunyikan kolom tambahan di mobile, sama seperti saat ini)
+- Lencana status: Hadir (hijau `#3fb950`), Libur (abu-abu `#8b949e`), TK/Sakit (merah `#f85149`)
+- Tombol unduh: pil lebar penuh, aksen hijau
+
+---
+
+## Elemen interaktif
+
+### Tombol
+- Semua: `border-radius: 24px`, `border: none`, `font-weight: 600`, `cursor: pointer`
+- Tinggi: 48px, padding: 0 24px
+- Transisi: `150ms ease` pada background-color dan box-shadow
+- Nonaktif: `opacity: 0.6`, `cursor: not-allowed`
+
+### Input teks
+- Latar: `#0d1117`, batas: `1px solid #30363d`, `border-radius: 8px`
+- Tinggi: 40px, padding: 0 12px
+- Fokus: batas `#58a6ff`, `box-shadow: 0 0 0 2px rgba(88,166,255,0.3)`
+- Placeholder: `#8b949e`
+- Label di atas input (bukan sejajar) — tidak ada teks yang tumpang tindih
+
+### Input file (bergaya kustom)
+- Wadah: latar `#161b22`, `1px solid #30363d`, `border-radius: 8px`
+- Lebar penuh, tata letak flex: teks label di kiri, nama file di kanan
+- Seluruh area dapat diklik
+- Hover: batas `#58a6ff`
+- `<input type="file">` asli disembunyikan, label menggerakkan klik via atribut `for`
+
+### Input tabel sejajar
+- Latar: `#161b22`, batas: `#30363d`, `border-radius: 6px`
+- Tinggi: 36px, ringkas
+- Fokus: batas `#58a6ff`
+
+### Pesan status
+- Teks kecerahan penuh (`#e6edf3`) untuk semua pesan penting
+- Error diwarnai merah (`#f85149`), info diwarnai amber (`#d29922`)
+- Tidak ada peredupan pada teks status
+
+---
+
+## Perilaku responsif
+
+- Lebar maksimal wadah body: 720px
+- Padding: 24px di desktop, 16px di mobile (`<600px`)
+- Grid metadata: 2 kolom di desktop, satu kolom bertumpuk di mobile
+- Tabel: aturan penyembunyian kolom sama seperti saat ini (sembunyikan Check-in, Check-out, Project Name, Project ID, Aplikasi Terdampak, AIP Fitur di layar sempit)
+- Kartu unggah: lebar penuh di mobile (tanpa maks tetap)
+
+---
+
+## Yang TIDAK berubah
+
+- Struktur HTML (semua elemen mempertahankan ID dan hierarki yang sama)
+- Kode JavaScript (tidak ada perubahan pada `server.js` atau `<script>` sejajar)
+- Endpoint dan perilaku server
+- Atribut `accept` input file dan nama field form
+
+## Batasan lingkup
+
+Spesifikasi ini mencakup **hanya penggantian CSS sejajar di `public/index.html`**. Tidak ada file baru, tidak ada dependensi baru, tidak ada perubahan server.
