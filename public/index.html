@@ -5,147 +5,436 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DigiHC to Timesheet</title>
     <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        max-width: 700px;
-        margin: 40px auto;
-        padding: 0 20px;
-      }
-      h1 {
-        font-size: 1.4rem;
-        margin-bottom: 24px;
-      }
-      label {
-        display: block;
-        font-weight: 600;
-        margin: 16px 0 6px;
-        font-size: 0.9rem;
-      }
-      input[type="file"] {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 0.85rem;
-      }
-      button {
-        padding: 10px 28px;
-        font-size: 0.95rem;
-        cursor: pointer;
-      }
-      #status {
-        margin-top: 16px;
-        font-size: 0.9rem;
-        min-height: 22px;
-      }
-      .error {
-        color: #d32f2f;
-      }
-      .success {
-        color: #2e7d32;
-      }
-      .info {
-        color: #555;
-      }
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-secondary: #c9d1d9;
+    --text-hint: #8b949e;
+    --accent: #58a6ff;
+    --btn-primary: #1f6feb;
+    --btn-primary-hover: #388bfd;
+    --btn-primary-active: #1158c7;
+    --btn-primary-text: #ffffff;
+    --btn-success: #238636;
+    --btn-success-hover: #2ea043;
+    --btn-success-active: #196c2e;
+    --btn-success-text: #ffffff;
+    --btn-disabled-bg: #21262d;
+    --btn-disabled-text: #666e79;
+    --error: #f85149;
+    --info: #d29922;
+    --success: #3fb950;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-pill: 24px;
+  }
 
-      #activitySection {
-        margin-top: 32px;
-      }
-      #activitySection h2 {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
-      }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-      }
-      th,
-      td {
-        padding: 8px 10px;
-        text-align: left;
-        border-bottom: 1px solid #e0e0e0;
-      }
-      th {
-        background: #f5f5f5;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-      td {
-        vertical-align: middle;
-      }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 40px 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 15px;
+    line-height: 1.4;
+  }
 
-      .activity-input {
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        font-size: 0.85rem;
-        box-sizing: border-box;
-      }
-      .activity-input:focus {
-        border-color: #1976d2;
-        outline: none;
-      }
+  h1 {
+    font-size: 1.25rem;
+    color: var(--text);
+    margin: 0 0 36px;
+    font-weight: 600;
+    text-align: center;
+  }
 
-      .status-H {
-        color: #2e7d32;
-        font-weight: 600;
-      }
-      .status-LIB {
-        color: #888;
-      }
-      .status-TK {
-        color: #d32f2f;
-      }
-      .status-S {
-        color: #d32f2f;
-        font-weight: 600;
-      }
-      .status-none {
-        color: #aaa;
-      }
+  h2 {
+    font-size: 1rem;
+    color: var(--text);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  /* === Upload Section === */
+  #uploadSection {
+    max-width: 420px;
+    width: 100%;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 32px 28px;
+  }
 
-      #downloadBtn {
-        margin-top: 20px;
-      }
+  /* Section labels (non-file-input labels) */
+  #uploadSection > label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px;
+  }
 
-      #metadataForm {
-        display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 8px 12px;
-        margin-bottom: 24px;
-        padding: 16px;
-        background: #fafafa;
-        border: 1px solid #e0e0e0;
-        border-radius: 4px;
-      }
-      #metadataForm label {
-        margin: 0;
-        align-self: center;
-        font-size: 0.85rem;
-      }
-      #metadataForm input {
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        font-size: 0.85rem;
-        box-sizing: border-box;
-      }
-      #metadataForm input:focus {
-        border-color: #1976d2;
-        outline: none;
-      }
+  /* File inputs — style the native ::file-selector-button */
+  #uploadSection input[type="file"] {
+    display: block;
+    width: 100%;
+    color: var(--text);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
 
-      @media (max-width: 600px) {
-        th:nth-child(2), td:nth-child(2),
-        th:nth-child(3), td:nth-child(3),
-        th:nth-child(6), td:nth-child(6),
-        th:nth-child(7), td:nth-child(7),
-        th:nth-child(8), td:nth-child(8),
-        th:nth-child(9), td:nth-child(9) {
-          display: none;
-        }
-      }
+  #uploadSection input[type="file"]::file-selector-button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-right: 12px;
+    transition: border-color 150ms ease, color 150ms ease;
+  }
+
+  #uploadSection input[type="file"]::file-selector-button:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Preview button */
+  #previewBtn {
+    display: block;
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: var(--btn-primary);
+    color: var(--btn-primary-text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+    appearance: none;
+  }
+
+  #previewBtn:hover {
+    background: var(--btn-primary-hover);
+  }
+
+  #previewBtn:active {
+    background: var(--btn-primary-active);
+  }
+
+  #previewBtn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  #previewBtn:disabled {
+    background: var(--btn-disabled-bg);
+    color: var(--btn-disabled-text);
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  /* Status messages */
+  #status {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--text);
+    min-height: 20px;
+    text-align: center;
+  }
+
+  #status.error {
+    color: var(--error);
+  }
+
+  #status.success {
+    color: var(--success);
+  }
+
+  #status.info {
+    color: var(--info);
+  }
+
+  /* === Activity Section === */
+  #activitySection {
+    max-width: 720px;
+    width: 100%;
+    margin-top: 36px;
+  }
+
+  #activitySection h2 {
+    font-size: 1rem;
+    color: var(--text);
+    margin: 0 0 14px;
+    font-weight: 600;
+  }
+
+  /* Metadata form card */
+  #metadataForm {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 14px 16px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  #metadataForm label {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin: 0;
+    font-weight: 400;
+    align-self: center;
+  }
+
+  #metadataForm input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    height: 40px;
+    color: var(--text);
+    font-size: 0.85rem;
+    width: 100%;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  #metadataForm input:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+  }
+
+  #metadataForm input::placeholder {
+    color: var(--text-hint);
+  }
+
+  /* Hint paragraph below metadata */
+  #activitySection > p {
+    color: var(--text-hint);
+    font-size: 0.82rem;
+    margin: 0 0 4px;
+  }
+
+  /* Divisi/Departement row */
+  #activitySection > div {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 14px 16px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  #activitySection > div label {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin: 0;
+  }
+
+  #activitySection > div input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    height: 40px;
+    color: var(--text);
+    font-size: 0.85rem;
+    width: 100%;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  #activitySection > div input:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+  }
+
+  /* Activity table */
+  #activityTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  #activityTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  #activityTable th {
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  #activityTable td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  #activityTable tbody tr:nth-child(odd) td {
+    background: var(--bg);
+  }
+
+  #activityTable tbody tr:nth-child(even) td {
+    background: var(--surface);
+  }
+
+  /* Status badges */
+  .status-H {
+    color: var(--success) !important;
+    font-weight: 600;
+  }
+
+  .status-LIB {
+    color: var(--text-hint) !important;
+  }
+
+  .status-TK {
+    color: var(--error) !important;
+    font-weight: 600;
+  }
+
+  .status-S {
+    color: var(--error) !important;
+    font-weight: 600;
+  }
+
+  .status-none {
+    color: var(--text-hint) !important;
+  }
+
+  /* Inline table inputs */
+  .activity-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 8px;
+    height: 36px;
+    color: var(--text);
+    font-size: 0.85rem;
+    transition: border-color 150ms ease;
+    box-sizing: border-box;
+  }
+
+  .activity-input:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+  }
+
+  .activity-input::placeholder {
+    color: var(--text-hint);
+  }
+
+  /* Download button */
+  #downloadBtn {
+    display: block;
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: var(--btn-success);
+    color: var(--btn-success-text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: background-color 150ms ease;
+    appearance: none;
+  }
+
+  #downloadBtn:hover {
+    background: var(--btn-success-hover);
+  }
+
+  #downloadBtn:active {
+    background: var(--btn-success-active);
+  }
+
+  #downloadBtn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  #downloadBtn:disabled {
+    background: var(--btn-disabled-bg);
+    color: var(--btn-disabled-text);
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  /* === Responsive === */
+  @media (max-width: 600px) {
+    body {
+      padding: 20px 16px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      margin-bottom: 24px;
+    }
+
+    #uploadSection {
+      padding: 24px 18px;
+    }
+
+    #metadataForm {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 16px;
+    }
+
+    #activitySection > div {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    /* Hide extra table columns on mobile */
+    #activityTable th:nth-child(2),
+    #activityTable td:nth-child(2),
+    #activityTable th:nth-child(3),
+    #activityTable td:nth-child(3),
+    #activityTable th:nth-child(6),
+    #activityTable td:nth-child(6),
+    #activityTable th:nth-child(7),
+    #activityTable td:nth-child(7),
+    #activityTable th:nth-child(8),
+    #activityTable td:nth-child(8),
+    #activityTable th:nth-child(9),
+    #activityTable td:nth-child(9) {
+      display: none;
+    }
+  }
     </style>
   </head>
   <body>
@@ -192,13 +481,13 @@
         <input type="text" id="inputDeptHeadName" />
       </div>
 
-      <p style="margin: 16px 0 4px; font-size: 0.85rem; color: #555;">Isi Divisi dan Departement untuk mengisi kolom terkait di setiap baris timesheet.</p>
-      <div style="display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; margin-bottom: 16px;">
-        <label for="inputDivisi" style="margin: 0; align-self: center; font-size: 0.85rem;">Divisi</label>
-        <input type="text" id="inputDivisi" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box;" />
+      <p>Isi Divisi dan Departement untuk mengisi kolom terkait di setiap baris timesheet.</p>
+      <div>
+        <label for="inputDivisi">Divisi</label>
+        <input type="text" id="inputDivisi" />
 
-        <label for="inputDepartement" style="margin: 0; align-self: center; font-size: 0.85rem;">Departement</label>
-        <input type="text" id="inputDepartement" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box;" />
+        <label for="inputDepartement">Departement</label>
+        <input type="text" id="inputDepartement" />
       </div>
 
       <h2>Aktivitas Harian</h2>
