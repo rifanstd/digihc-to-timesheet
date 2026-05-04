@@ -45,6 +45,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     font-size: 15px;
     line-height: 1.4;
   }
@@ -57,13 +58,6 @@
     text-align: center;
   }
 
-  h2 {
-    font-size: 1rem;
-    color: var(--text);
-    margin: 0 0 12px;
-    font-weight: 600;
-  }
-  /* === Upload Section === */
   #uploadSection {
     max-width: 420px;
     width: 100%;
@@ -72,7 +66,6 @@
     padding: 32px 28px;
   }
 
-  /* Section labels (non-file-input labels) */
   #uploadSection > label {
     display: block;
     color: var(--text-secondary);
@@ -83,7 +76,6 @@
     margin: 0 0 6px;
   }
 
-  /* File inputs — style the native ::file-selector-button */
   #uploadSection input[type="file"] {
     display: block;
     width: 100%;
@@ -111,7 +103,6 @@
     color: var(--text);
   }
 
-  /* Preview button */
   #previewBtn {
     display: block;
     width: 100%;
@@ -148,7 +139,6 @@
     opacity: 1;
   }
 
-  /* Status messages */
   #status {
     margin-top: 14px;
     font-size: 0.85rem;
@@ -157,283 +147,14 @@
     text-align: center;
   }
 
-  #status.error {
-    color: var(--error);
-  }
+  #status.error { color: var(--error); }
+  #status.success { color: var(--success); }
+  #status.info { color: var(--info); }
 
-  #status.success {
-    color: var(--success);
-  }
-
-  #status.info {
-    color: var(--info);
-  }
-
-  /* === Activity Section === */
-  #activitySection {
-    max-width: 720px;
-    width: 100%;
-    margin-top: 36px;
-  }
-
-  #activitySection h2 {
-    font-size: 1rem;
-    color: var(--text);
-    margin: 0 0 14px;
-    font-weight: 600;
-  }
-
-  /* Metadata form card */
-  #metadataForm {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 20px 24px;
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 14px 16px;
-    margin-bottom: 20px;
-    align-items: center;
-  }
-
-  #metadataForm label {
-    color: var(--text-secondary);
-    font-size: 0.82rem;
-    margin: 0;
-    font-weight: 400;
-    align-self: center;
-  }
-
-  #metadataForm input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 0 12px;
-    height: 40px;
-    color: var(--text);
-    font-size: 0.85rem;
-    width: 100%;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-  }
-
-  #metadataForm input:focus {
-    border-color: var(--accent);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
-  }
-
-  #metadataForm input::placeholder {
-    color: var(--text-hint);
-  }
-
-  /* Hint paragraph below metadata */
-  #activitySection > p {
-    color: var(--text-hint);
-    font-size: 0.82rem;
-    margin: 0 0 4px;
-  }
-
-  /* Divisi/Departement row */
-  #activitySection > div {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 14px 16px;
-    margin-bottom: 20px;
-    align-items: center;
-  }
-
-  #activitySection > div label {
-    color: var(--text-secondary);
-    font-size: 0.82rem;
-    margin: 0;
-  }
-
-  #activitySection > div input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 0 12px;
-    height: 40px;
-    color: var(--text);
-    font-size: 0.85rem;
-    width: 100%;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-  }
-
-  #activitySection > div input:focus {
-    border-color: var(--accent);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
-  }
-
-  /* Activity table */
-  #activityTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-
-  #activityTable thead {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-
-  #activityTable th {
-    background: var(--surface);
-    color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  #activityTable td {
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-  }
-
-  #activityTable tbody tr:nth-child(odd) td {
-    background: var(--bg);
-  }
-
-  #activityTable tbody tr:nth-child(even) td {
-    background: var(--surface);
-  }
-
-  /* Status badges */
-  .status-H {
-    color: var(--success) !important;
-    font-weight: 600;
-  }
-
-  .status-LIB {
-    color: var(--text-hint) !important;
-  }
-
-  .status-TK {
-    color: var(--error) !important;
-    font-weight: 600;
-  }
-
-  .status-S {
-    color: var(--error) !important;
-    font-weight: 600;
-  }
-
-  .status-none {
-    color: var(--text-hint) !important;
-  }
-
-  /* Inline table inputs */
-  .activity-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 0 8px;
-    height: 36px;
-    color: var(--text);
-    font-size: 0.85rem;
-    transition: border-color 150ms ease;
-    box-sizing: border-box;
-  }
-
-  .activity-input:focus {
-    border-color: var(--accent);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
-  }
-
-  .activity-input::placeholder {
-    color: var(--text-hint);
-  }
-
-  /* Download button */
-  #downloadBtn {
-    display: block;
-    width: 100%;
-    height: 48px;
-    border: none;
-    border-radius: var(--radius-pill);
-    background: var(--btn-success);
-    color: var(--btn-success-text);
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 24px;
-    transition: background-color 150ms ease;
-    appearance: none;
-  }
-
-  #downloadBtn:hover {
-    background: var(--btn-success-hover);
-  }
-
-  #downloadBtn:active {
-    background: var(--btn-success-active);
-  }
-
-  #downloadBtn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  #downloadBtn:disabled {
-    background: var(--btn-disabled-bg);
-    color: var(--btn-disabled-text);
-    cursor: not-allowed;
-    opacity: 1;
-  }
-
-  /* === Responsive === */
   @media (max-width: 600px) {
-    body {
-      padding: 20px 16px;
-    }
-
-    h1 {
-      font-size: 1.1rem;
-      margin-bottom: 24px;
-    }
-
-    #uploadSection {
-      padding: 24px 18px;
-    }
-
-    #metadataForm {
-      grid-template-columns: 1fr;
-      gap: 6px;
-      padding: 16px;
-    }
-
-    #activitySection > div {
-      grid-template-columns: 1fr;
-      gap: 6px;
-    }
-
-    /* Hide extra table columns on mobile */
-    #activityTable th:nth-child(2),
-    #activityTable td:nth-child(2),
-    #activityTable th:nth-child(3),
-    #activityTable td:nth-child(3),
-    #activityTable th:nth-child(6),
-    #activityTable td:nth-child(6),
-    #activityTable th:nth-child(7),
-    #activityTable td:nth-child(7),
-    #activityTable th:nth-child(8),
-    #activityTable td:nth-child(8),
-    #activityTable th:nth-child(9),
-    #activityTable td:nth-child(9) {
-      display: none;
-    }
+    body { padding: 20px 16px; }
+    h1 { font-size: 1.1rem; margin-bottom: 24px; }
+    #uploadSection { padding: 24px 18px; }
   }
     </style>
   </head>
@@ -445,78 +166,15 @@
       <input type="file" id="pdf" name="pdf" accept=".pdf" required />
 
       <label for="template">Timesheet Template (XLSX)</label>
-      <input
-        type="file"
-        id="template"
-        name="template"
-        accept=".xlsx"
-        required
-      />
+      <input type="file" id="template" name="template" accept=".xlsx" required />
 
       <button id="previewBtn">Preview Data</button>
       <div id="status"></div>
     </div>
 
-    <div id="activitySection" style="display: none">
-      <div id="metadataForm">
-        <label for="inputProjectName">Project Name</label>
-        <input type="text" id="inputProjectName" />
-
-        <label for="inputSite">SITE</label>
-        <input type="text" id="inputSite" />
-
-        <label for="inputUnit">Unit / Divisi</label>
-        <input type="text" id="inputUnit" />
-
-        <label for="inputName">Nama</label>
-        <input type="text" id="inputName" />
-
-        <label for="inputMiiId">MII ID</label>
-        <input type="text" id="inputMiiId" />
-
-        <label for="inputManagerName">Nama Manager (Diperiksa Oleh)</label>
-        <input type="text" id="inputManagerName" />
-
-        <label for="inputDeptHeadName">Nama Kepala Departemen (Disetujui Oleh)</label>
-        <input type="text" id="inputDeptHeadName" />
-      </div>
-
-      <p>Isi Divisi dan Departement untuk mengisi kolom terkait di setiap baris timesheet.</p>
-      <div>
-        <label for="inputDivisi">Divisi</label>
-        <input type="text" id="inputDivisi" />
-
-        <label for="inputDepartement">Departement</label>
-        <input type="text" id="inputDepartement" />
-      </div>
-
-      <h2>Aktivitas Harian</h2>
-      <table id="activityTable">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Status</th>
-            <th>Aktivitas</th>
-            <th>Project Name</th>
-            <th>Project ID</th>
-            <th>Aplikasi Terdampak</th>
-            <th>AIP Fitur</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button id="downloadBtn">Download Timesheet</button>
-    </div>
-
     <script>
       const statusEl = document.getElementById("status");
       const previewBtn = document.getElementById("previewBtn");
-      const downloadBtn = document.getElementById("downloadBtn");
-      const activitySection = document.getElementById("activitySection");
-
-      let previewData = null;
 
       function setStatus(msg, cls) {
         statusEl.textContent = msg;
@@ -542,236 +200,17 @@
 
           const res = await fetch("/preview", { method: "POST", body: data });
 
-          if (!res.ok) {
-            const err = await res.json();
-            setStatus("Error: " + (err.error || "Unknown error"), "error");
+          if (res.redirected) {
+            window.location.href = res.url;
             return;
           }
 
-          previewData = await res.json();
-          renderTable(previewData);
-          activitySection.style.display = "block";
-          setStatus(
-            previewData.rows.length +
-              " hari ditemukan. Isi aktivitas lalu klik Download.",
-            "success",
-          );
+          const err = await res.json();
+          setStatus("Error: " + (err.error || "Unknown error"), "error");
         } catch (err) {
           setStatus("Error: " + err.message, "error");
         } finally {
           previewBtn.disabled = false;
-        }
-      });
-
-      function renderTable(data) {
-        const tbody = document.querySelector("#activityTable tbody");
-        tbody.innerHTML = "";
-
-        // Populate metadata form
-        document.getElementById('inputProjectName').value = data.defaults?.projectName || '';
-        document.getElementById('inputSite').value = data.defaults?.site || '';
-        document.getElementById('inputName').value = data.metadata?.name || '';
-
-        const statusLabels = {
-          H: "Hadir",
-          LIB: "Libur",
-          TK: "Tanpa Keterangan",
-          S: "Sakit",
-        };
-
-        for (const row of data.rows) {
-          const tr = document.createElement("tr");
-
-          const tdDate = document.createElement("td");
-          tdDate.textContent = row.date;
-
-          const tdIn = document.createElement("td");
-          tdIn.textContent = row.checkIn
-            ? row.checkIn.substring(0, 5)
-            : "\u2014";
-
-          const tdOut = document.createElement("td");
-          tdOut.textContent = row.checkOut
-            ? row.checkOut.substring(0, 5)
-            : "\u2014";
-
-          const tdStatus = document.createElement("td");
-          tdStatus.textContent = statusLabels[row.status] || "\u2014";
-          tdStatus.className = "status-" + (row.status || "none");
-
-          const tdAct = document.createElement("td");
-          if (row.status === "H") {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "activity-input";
-            input.value = row.activity || "";
-            input.dataset.serial = row.serial;
-            input.placeholder = "Masukkan aktivitas...";
-            tdAct.appendChild(input);
-          } else {
-            if (row.status === "S") {
-              tdAct.textContent = "Sakit";
-            } else if (row.status === "LIB" && row.activity) {
-              tdAct.textContent = row.activity;
-            } else if (row.status === "TK") {
-              tdAct.textContent = "Tanpa Keterangan";
-            } else {
-              tdAct.textContent = "\u2014";
-            }
-          }
-
-          // Project Name
-          const tdProjName = document.createElement("td");
-          if (row.status === "H") {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "activity-input";
-            input.dataset.serial = row.serial;
-            input.dataset.field = "projectName";
-            input.placeholder = "Project Name...";
-            tdProjName.appendChild(input);
-          } else {
-            tdProjName.textContent = "\u2014";
-          }
-
-          // Project ID
-          const tdProjId = document.createElement("td");
-          if (row.status === "H") {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "activity-input";
-            input.dataset.serial = row.serial;
-            input.dataset.field = "projectId";
-            input.placeholder = "Project ID...";
-            tdProjId.appendChild(input);
-          } else {
-            tdProjId.textContent = "\u2014";
-          }
-
-          // Aplikasi Terdampak
-          const tdAffected = document.createElement("td");
-          if (row.status === "H") {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "activity-input";
-            input.dataset.serial = row.serial;
-            input.dataset.field = "affectedApp";
-            input.placeholder = "Aplikasi Terdampak...";
-            tdAffected.appendChild(input);
-          } else {
-            tdAffected.textContent = "\u2014";
-          }
-
-          // AIP Fitur
-          const tdAip = document.createElement("td");
-          if (row.status === "H") {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "activity-input";
-            input.dataset.serial = row.serial;
-            input.dataset.field = "aipFeature";
-            input.placeholder = "AIP Fitur...";
-            tdAip.appendChild(input);
-          } else {
-            tdAip.textContent = "\u2014";
-          }
-
-          tr.appendChild(tdDate);
-          tr.appendChild(tdIn);
-          tr.appendChild(tdOut);
-          tr.appendChild(tdStatus);
-          tr.appendChild(tdAct);
-          tr.appendChild(tdProjName);
-          tr.appendChild(tdProjId);
-          tr.appendChild(tdAffected);
-          tr.appendChild(tdAip);
-          tbody.appendChild(tr);
-        }
-      }
-
-      downloadBtn.addEventListener("click", async () => {
-        const pdfFile = document.getElementById("pdf").files[0];
-        const templateFile = document.getElementById("template").files[0];
-
-        if (!pdfFile || !templateFile) {
-          setStatus("File PDF dan template harus dipilih.", "error");
-          return;
-        }
-
-        const activitiesMap = new Map();
-        document.querySelectorAll(".activity-input").forEach((input) => {
-          const serial = parseInt(input.dataset.serial);
-          if (!activitiesMap.has(serial)) {
-            activitiesMap.set(serial, { serial });
-          }
-          const entry = activitiesMap.get(serial);
-          const field = input.dataset.field || "activity";
-          if (input.value.trim()) {
-            entry[field] = input.value.trim();
-          }
-        });
-
-        // Auto-append 'Sakit' for every S-status row
-        previewData.rows.forEach((row) => {
-          if (row.status === "S") {
-            if (!activitiesMap.has(row.serial)) {
-              activitiesMap.set(row.serial, { serial: row.serial });
-            }
-            activitiesMap.get(row.serial).activity = "Sakit";
-          }
-        });
-
-        const activities = Array.from(activitiesMap.values()).filter(
-          (a) => a.activity || a.projectName || a.projectId || a.affectedApp || a.aipFeature
-        );
-
-        const headerFields = {
-          projectName: document.getElementById('inputProjectName').value.trim(),
-          site: document.getElementById('inputSite').value.trim(),
-          unit: document.getElementById('inputUnit').value.trim(),
-          name: document.getElementById('inputName').value.trim(),
-          miiId: document.getElementById('inputMiiId').value.trim(),
-          managerName: document.getElementById('inputManagerName').value.trim(),
-          deptHeadName: document.getElementById('inputDeptHeadName').value.trim()
-        };
-
-        const rowFields = {
-          divisi: document.getElementById('inputDivisi').value.trim(),
-          departement: document.getElementById('inputDepartement').value.trim()
-        };
-
-        setStatus("Mengunduh...", "info");
-        downloadBtn.disabled = true;
-
-        try {
-          const data = new FormData();
-          data.append("pdf", pdfFile);
-          data.append("template", templateFile);
-          data.append("activities", JSON.stringify(activities));
-          data.append('headerFields', JSON.stringify(headerFields));
-          data.append('rowFields', JSON.stringify(rowFields));
-
-          const res = await fetch("/convert", { method: "POST", body: data });
-
-          if (!res.ok) {
-            const err = await res.json();
-            setStatus("Error: " + (err.error || "Unknown error"), "error");
-            return;
-          }
-
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "timesheet-filled.xlsx";
-          a.click();
-          URL.revokeObjectURL(url);
-
-          setStatus("Download dimulai!", "success");
-        } catch (err) {
-          setStatus("Error: " + err.message, "error");
-        } finally {
-          downloadBtn.disabled = false;
         }
       });
     </script>
