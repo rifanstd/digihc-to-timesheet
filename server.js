@@ -178,7 +178,9 @@ app.post('/convert/:id', upload.none(), async (req, res) => {
       }
     }
 
-    const outputBuffer = await fillTimesheet(session.templateBuffer, session.records, activitiesMap, headerFields, rowFields);
+    const signatureDate = req.body.signatureDate || '';
+
+    const outputBuffer = await fillTimesheet(session.templateBuffer, session.records, activitiesMap, headerFields, rowFields, signatureDate);
 
     if (session.timer) clearTimeout(session.timer);
     sessions.delete(req.params.id);
