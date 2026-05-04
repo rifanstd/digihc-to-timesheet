@@ -596,13 +596,13 @@
           departement: document.getElementById('inputDepartement').value.trim()
         };
 
+        let signDate = null;
         const signDateEl = document.getElementById('inputSignDate');
         if (signDateEl && signDateEl.value) {
           const [y, m, d] = signDateEl.value.split('-');
           const indoMonths = ['Januari','Februari','Maret','April','Mei','Juni',
                               'Juli','Agustus','September','Oktober','November','Desember'];
-          const indoDate = parseInt(d, 10) + ' ' + indoMonths[parseInt(m, 10) - 1] + ' ' + y;
-          data.append('signatureDate', indoDate);
+          signDate = parseInt(d, 10) + ' ' + indoMonths[parseInt(m, 10) - 1] + ' ' + y;
         }
 
         setStatus("Mengunduh...", "info");
@@ -613,6 +613,7 @@
           data.append("activities", JSON.stringify(activities));
           data.append('headerFields', JSON.stringify(headerFields));
           data.append('rowFields', JSON.stringify(rowFields));
+          if (signDate) data.append('signatureDate', signDate);
 
           const res = await fetch("/convert/" + CACHE_ID, { method: "POST", body: data });
 
