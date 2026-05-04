@@ -481,13 +481,28 @@
           tdDate.textContent = row.date;
 
           const tdIn = document.createElement("td");
-          tdIn.textContent = row.checkIn ? row.checkIn.substring(0, 5) : "\u2014";
+          if (row.checkIn) {
+            tdIn.textContent = row.checkIn.substring(0, 5);
+          } else {
+            tdIn.textContent = "---";
+            tdIn.style.textAlign = "center";
+          }
 
           const tdOut = document.createElement("td");
-          tdOut.textContent = row.checkOut ? row.checkOut.substring(0, 5) : "\u2014";
+          if (row.checkOut) {
+            tdOut.textContent = row.checkOut.substring(0, 5);
+          } else {
+            tdOut.textContent = "---";
+            tdOut.style.textAlign = "center";
+          }
 
           const tdStatus = document.createElement("td");
-          tdStatus.textContent = statusLabels[row.status] || "\u2014";
+          if (statusLabels[row.status]) {
+            tdStatus.textContent = statusLabels[row.status];
+          } else {
+            tdStatus.textContent = "---";
+            tdStatus.style.textAlign = "center";
+          }
           tdStatus.className = "status-" + (row.status || "none");
 
           const tdAct = document.createElement("td");
@@ -506,7 +521,8 @@
             } else if (row.status === "TK") {
               tdAct.textContent = "Tanpa Keterangan";
             } else {
-              tdAct.textContent = "\u2014";
+              tdAct.textContent = "---";
+              tdAct.style.textAlign = "center";
             }
           }
 
@@ -519,7 +535,8 @@
             input.dataset.field = "projectName";
             tdProjName.appendChild(input);
           } else {
-            tdProjName.textContent = "\u2014";
+            tdProjName.textContent = "---";
+            tdProjName.style.textAlign = "center";
           }
 
           const tdProjId = document.createElement("td");
@@ -531,7 +548,8 @@
             input.dataset.field = "projectId";
             tdProjId.appendChild(input);
           } else {
-            tdProjId.textContent = "\u2014";
+            tdProjId.textContent = "---";
+            tdProjId.style.textAlign = "center";
           }
 
           const tdAffected = document.createElement("td");
@@ -543,7 +561,8 @@
             input.dataset.field = "affectedApp";
             tdAffected.appendChild(input);
           } else {
-            tdAffected.textContent = "\u2014";
+            tdAffected.textContent = "---";
+            tdAffected.style.textAlign = "center";
           }
 
           const tdAip = document.createElement("td");
@@ -555,7 +574,8 @@
             input.dataset.field = "aipFeature";
             tdAip.appendChild(input);
           } else {
-            tdAip.textContent = "\u2014";
+            tdAip.textContent = "---";
+            tdAip.style.textAlign = "center";
           }
 
           tr.appendChild(tdDate);
