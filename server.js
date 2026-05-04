@@ -1,12 +1,25 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
 const { parsePdf, getRecordMonth, serialToIndonesianDate } = require('./lib/parser');
 const { fillTimesheet, previewTemplate } = require('./lib/filler');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 const PORT = process.env.PORT || 3000;
+
+const sessions = new Map();
+const SESSION_TTL = 15 * 60 * 1000;
+
+function setTimer(id) {
+  const session = sessions.get(id);
+  if (!session) return;
+  if (session.timer) clearTimeout(session.timer);
+  session.timer = setTimeout(() => {
+    sessions.delete(id);
+  }, SESSION_TTL);
+}
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -57,7 +70,7 @@ app.post('/preview', upload.fields([
       };
     });
 
-    res.json({
+    const previewData = {
       month: { month: layout.month, year: layout.year },
       rows,
       metadata,
@@ -65,7 +78,18 @@ app.post('/preview', upload.fields([
         projectName: 'PT Bank Negara Indonesia (Persero) Tbk',
         site: 'BNI'
       }
+    };
+
+    const id = crypto.randomUUID();
+    sessions.set(id, {
+      pdfBuffer: pdfFile.buffer,
+      templateBuffer: templateFile.buffer,
+      records,
+      previewData
     });
+
+    setTimer(id);
+    res.redirect('/preview/' + id);
   } catch (err) {
     console.error(err);
     const status = err.statusCode || 500;
@@ -73,16 +97,20 @@ app.post('/preview', upload.fields([
   }
 });
 
-app.post('/convert', upload.fields([
-  { name: 'pdf', maxCount: 1 },
-  { name: 'template', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const pdfFile = req.files['pdf']?.[0];
-    const templateFile = req.files['template']?.[0];
+app.get('/preview/:id', (req, res) => {
+  const session = sessions.get(req.params.id);
+  if (!session) {
+    return res.status(410).send('<html><body style="font-family:sans-serif;padding:40px;text-align:center;background:#0d1117;color:#e6edf3"><h2>Sesi telah berakhir</h2><p>Silakan <a href="/" style="color:#58a6ff">unggah ulang</a> file PDF dan template.</p></body></html>');
+  }
+  setTimer(req.params.id);
+  res.sendFile(path.join(__dirname, 'public', 'preview.html'));
+});
 
-    if (!pdfFile || !templateFile) {
-      return res.status(400).json({ error: 'File PDF dan template harus diunggah.' });
+app.post('/convert/:id', upload.none(), async (req, res) => {
+  try {
+    const session = sessions.get(req.params.id);
+    if (!session) {
+      return res.status(410).json({ error: 'Sesi telah berakhir, silakan unggah ulang.' });
     }
 
     let activitiesMap = null;
@@ -144,13 +172,10 @@ app.post('/convert', upload.fields([
       }
     }
 
-    const { records, errors } = await parsePdf(pdfFile.buffer);
+    const outputBuffer = await fillTimesheet(session.templateBuffer, session.records, activitiesMap, headerFields, rowFields);
 
-    if (records.length === 0) {
-      return res.status(422).json({ error: 'Data kehadiran tidak ditemukan di PDF. Apakah ini laporan DigiHC?' });
-    }
-
-    const outputBuffer = await fillTimesheet(templateFile.buffer, records, activitiesMap, headerFields, rowFields);
+    if (session.timer) clearTimeout(session.timer);
+    sessions.delete(req.params.id);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="timesheet-filled.xlsx"');
