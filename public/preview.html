@@ -169,6 +169,29 @@
     color: var(--text-hint);
   }
 
+  #inputSignDate {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    height: 40px;
+    color: var(--text);
+    font-size: 0.85rem;
+    width: 100%;
+    margin-bottom: 16px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  #inputSignDate:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+  }
+
+  #inputSignDate::placeholder {
+    color: var(--text-hint);
+  }
+
   /* Activity table */
   #activityTable {
     width: 100%;
@@ -392,6 +415,8 @@
     </table>
     <label for="inputFilename">Nama File</label>
     <input type="text" id="inputFilename" />
+    <label for="inputSignDate">Tanggal Penandatanganan</label>
+    <input type="date" id="inputSignDate" />
     <button id="downloadBtn">Download Timesheet</button>
     <div id="status"></div>
 
@@ -570,6 +595,15 @@
           divisi: document.getElementById('inputDivisi').value.trim(),
           departement: document.getElementById('inputDepartement').value.trim()
         };
+
+        const signDateEl = document.getElementById('inputSignDate');
+        if (signDateEl && signDateEl.value) {
+          const [y, m, d] = signDateEl.value.split('-');
+          const indoMonths = ['Januari','Februari','Maret','April','Mei','Juni',
+                              'Juli','Agustus','September','Oktober','November','Desember'];
+          const indoDate = parseInt(d, 10) + ' ' + indoMonths[parseInt(m, 10) - 1] + ' ' + y;
+          data.append('signatureDate', indoDate);
+        }
 
         setStatus("Mengunduh...", "info");
         downloadBtn.disabled = true;
